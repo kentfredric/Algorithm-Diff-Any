@@ -1,0 +1,25 @@
+---
+abstract: 'Perl module to find differences between files'
+author:
+  - 'Jonathan Yu <jawnsy@cpan.org>'
+build_requires:
+  Test::NoWarnings: 0.084
+configure_requires:
+  ExtUtils::MakeMaker: 6.31
+dynamic_config: 0
+generated_by: 'Dist::Zilla version 4.200000, CPAN::Meta::Converter version 2.102400'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Algorithm-Diff-Any
+requires:
+  Algorithm::Diff: 1.1902
+  Exporter: 5.57
+  Test::More: 0.62
+  perl: 5.006
+resources:
+  bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Algorithm-Diff-Any
+  homepage: http://search.cpan.org/dist/Algorithm-Diff-Any
+  repository: git://github.com/jawnsy/Algorithm-Diff-Any.git
+version: 1.001

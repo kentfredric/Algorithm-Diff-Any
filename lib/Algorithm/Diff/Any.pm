@@ -3,6 +3,9 @@
 #  the diff algorithm (Algorithm::Diff or Algorithm::Diff::XS)
 
 package Algorithm::Diff::Any;
+BEGIN {
+  $Algorithm::Diff::Any::VERSION = '1.001';
+}
 # ABSTRACT: Perl module to find differences between files
 
 use strict;
@@ -47,6 +50,115 @@ if ($@) {
   }
 }
 
+
+# Wrappers around the actual methods
+sub new {
+  my ($class, $seq1, $seq2, $opts) = @_;
+
+  Carp::croak('You must call this as a class method') if ref($class);
+
+  Carp::croak('You must provide two sequences to compare as array refs')
+    unless (ref($seq1) eq 'ARRAY' && ref($seq2) eq 'ARRAY');
+
+  my $self = {
+  };
+
+  if ($DRIVER eq 'XS') {
+    $self->{backend} = Algorithm::Diff::XS->new($seq1, $seq2, $opts);
+  }
+  else {
+    $self->{backend} = Algorithm::Diff->new($seq1, $seq2, $opts);
+  }
+
+  bless($self, $class);
+  return $self;
+}
+
+
+sub Next {
+  shift->{backend}->Next(@_);
+}
+
+
+sub Prev {
+  shift->{backend}->Prev(@_);
+}
+
+
+sub Reset {
+  my $self = shift;
+  $self->{backend}->Reset(@_);
+  return $self;
+}
+
+
+sub Copy {
+  shift->{backend}->Copy(@_);
+}
+
+
+sub Base {
+  shift->{backend}->Base(@_);
+}
+
+
+sub Diff {
+  shift->{backend}->Diff(@_);
+}
+
+
+sub Same {
+  shift->{backend}->Same(@_);
+}
+
+
+sub Items {
+  shift->{backend}->Items(@_);
+}
+
+
+sub Range {
+  shift->{backend}->Range(@_);
+}
+
+
+sub Min {
+  shift->{backend}->Min(@_);
+}
+
+
+sub Max {
+  shift->{backend}->Max(@_);
+}
+
+
+sub Get {
+  shift->{backend}->Get(@_);
+}
+
+
+1;
+
+__END__
+=pod
+
+=head1 NAME
+
+Algorithm::Diff::Any - Perl module to find differences between files
+
+=head1 VERSION
+
+version 1.001
+
+=head1 SYNOPSIS
+
+  use Algorithm::Diff::Any;
+
+  my $diff = Algorithm::Diff::Any->new(\@seq1, \@seq2);
+
+For complete usage details, see the Object-Oriented interface description
+for the L<Algorithm::Diff> module.
+
 =head1 DESCRIPTION
 
 This is a simple module to select the best available implementation of the
@@ -65,14 +177,96 @@ In order to speed up processing, a fast (C/XS-based) implementation of the
 algorithm's core loop was implemented. It can confer a noticable performance
 advantage (benchmarks show a 54x speedup for the C<compact_diff> routine).
 
-=head1 SYNOPSIS
+=head1 METHODS
 
-  use Algorithm::Diff::Any;
+=head2 new
 
-  my $diff = Algorithm::Diff::Any->new(\@seq1, \@seq2);
+  Algorithm::Diff::Any->new( \@seq1, \@seq2, \%opts );
 
-For complete usage details, see the Object-Oriented interface description
-for the L<Algorithm::Diff> module.
+Creates a C<Algorithm::Diff::Any> object, based upon either the optimized
+C/XS version of the algorithm, L<Algorithm::Diff::XS>, or falls back to
+the Pure Perl implementation, L<Algorithm::Diff>.
+
+Example code:
+
+  my $diff = Algorithm::Diff::Any->new( \@seq1, \@seq2 );
+  # or with options
+  my $diff = Algorithm::Diff::Any->new( \@seq1, \@seq2, \%opts );
+
+This method will return an appropriate B<Algorithm::Diff::Any> object or
+throw an exception on error.
+
+=head2 Next
+
+  $diff->Next( $count )
+
+See L<Algorithm::Diff> for method documentation.
+
+=head2 Prev
+
+  $diff->Prev( $count )
+
+See L<Algorithm::Diff> for method documentation.
+
+=head2 Reset
+
+  $diff->Reset( $pos )
+
+See L<Algorithm::Diff> for method documentation.
+
+=head2 Copy
+
+  $diff->Copy( $pos, $newBase )
+
+See L<Algorithm::Diff> for method documentation.
+
+=head2 Base
+
+  $diff->Base( $newBase )
+
+See L<Algorithm::Diff> for method documentation.
+
+=head2 Diff
+
+  $diff->Diff( )
+
+See L<Algorithm::Diff> for method documentation.
+
+=head2 Same
+
+  $diff->Same( )
+
+See L<Algorithm::Diff> for method documentation.
+
+=head2 Items
+
+  $diff->Items( $seqNum )
+
+See L<Algorithm::Diff> for method documentation.
+
+=head2 Range
+
+  $diff->Range( $seqNum, $base )
+
+See L<Algorithm::Diff> for method documentation.
+
+=head2 Min
+
+  $diff->Min( $seqNum, $base )
+
+See L<Algorithm::Diff> for method documentation.
+
+=head2 Max
+
+  $diff->Max( $seqNum, $base )
+
+See L<Algorithm::Diff> for method documentation.
+
+=head2 Get
+
+  $diff->Get( @names )
+
+See L<Algorithm::Diff> for method documentation.
 
 =head1 PURPOSE
 
@@ -130,194 +324,6 @@ The following functions are available for import into your namespace:
 
 For full documentation, see the relevant functional descriptions in the Pure
 Perl implementation, L<Algorithm::Diff>.
-
-=method new
-
-  Algorithm::Diff::Any->new( \@seq1, \@seq2, \%opts );
-
-Creates a C<Algorithm::Diff::Any> object, based upon either the optimized
-C/XS version of the algorithm, L<Algorithm::Diff::XS>, or falls back to
-the Pure Perl implementation, L<Algorithm::Diff>.
-
-Example code:
-
-  my $diff = Algorithm::Diff::Any->new( \@seq1, \@seq2 );
-  # or with options
-  my $diff = Algorithm::Diff::Any->new( \@seq1, \@seq2, \%opts );
-
-This method will return an appropriate B<Algorithm::Diff::Any> object or
-throw an exception on error.
-
-=cut
-
-# Wrappers around the actual methods
-sub new {
-  my ($class, $seq1, $seq2, $opts) = @_;
-
-  Carp::croak('You must call this as a class method') if ref($class);
-
-  Carp::croak('You must provide two sequences to compare as array refs')
-    unless (ref($seq1) eq 'ARRAY' && ref($seq2) eq 'ARRAY');
-
-  my $self = {
-  };
-
-  if ($DRIVER eq 'XS') {
-    $self->{backend} = Algorithm::Diff::XS->new($seq1, $seq2, $opts);
-  }
-  else {
-    $self->{backend} = Algorithm::Diff->new($seq1, $seq2, $opts);
-  }
-
-  bless($self, $class);
-  return $self;
-}
-
-=method Next
-
-  $diff->Next( $count )
-
-See L<Algorithm::Diff> for method documentation.
-
-=cut
-
-sub Next {
-  shift->{backend}->Next(@_);
-}
-
-=method Prev
-
-  $diff->Prev( $count )
-
-See L<Algorithm::Diff> for method documentation.
-
-=cut
-
-sub Prev {
-  shift->{backend}->Prev(@_);
-}
-
-=method Reset
-
-  $diff->Reset( $pos )
-
-See L<Algorithm::Diff> for method documentation.
-
-=cut
-
-sub Reset {
-  my $self = shift;
-  $self->{backend}->Reset(@_);
-  return $self;
-}
-
-=method Copy
-
-  $diff->Copy( $pos, $newBase )
-
-See L<Algorithm::Diff> for method documentation.
-
-=cut
-
-sub Copy {
-  shift->{backend}->Copy(@_);
-}
-
-=method Base
-
-  $diff->Base( $newBase )
-
-See L<Algorithm::Diff> for method documentation.
-
-=cut
-
-sub Base {
-  shift->{backend}->Base(@_);
-}
-
-=method Diff
-
-  $diff->Diff( )
-
-See L<Algorithm::Diff> for method documentation.
-
-=cut
-
-sub Diff {
-  shift->{backend}->Diff(@_);
-}
-
-=method Same
-
-  $diff->Same( )
-
-See L<Algorithm::Diff> for method documentation.
-
-=cut
-
-sub Same {
-  shift->{backend}->Same(@_);
-}
-
-=method Items
-
-  $diff->Items( $seqNum )
-
-See L<Algorithm::Diff> for method documentation.
-
-=cut
-
-sub Items {
-  shift->{backend}->Items(@_);
-}
-
-=method Range
-
-  $diff->Range( $seqNum, $base )
-
-See L<Algorithm::Diff> for method documentation.
-
-=cut
-
-sub Range {
-  shift->{backend}->Range(@_);
-}
-
-=method Min
-
-  $diff->Min( $seqNum, $base )
-
-See L<Algorithm::Diff> for method documentation.
-
-=cut
-
-sub Min {
-  shift->{backend}->Min(@_);
-}
-
-=method Max
-
-  $diff->Max( $seqNum, $base )
-
-See L<Algorithm::Diff> for method documentation.
-
-=cut
-
-sub Max {
-  shift->{backend}->Max(@_);
-}
-
-=method Get
-
-  $diff->Get( @names )
-
-See L<Algorithm::Diff> for method documentation.
-
-=cut
-
-sub Get {
-  shift->{backend}->Get(@_);
-}
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -402,6 +408,25 @@ C<cdiff> subroutine.
 
 =back
 
+=head1 BUGS
+
+Please report any bugs or feature requests on the bugtracker website
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=Algorithm-Diff-Any
+
+When submitting a bug or request, please include a test-file or a
+patch to an existing test-file that illustrates the bug or desired
+feature.
+
+=head1 AUTHOR
+
+Jonathan Yu <jawnsy@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2011 by Jonathan Yu <jawnsy@cpan.org>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
 =cut
 
-1;
